@@ -1,116 +1,72 @@
 // ==UserScript==
-// @name         Em Viagens Travel
+// @name         Preenchimento Automático de Login Atualizado
 // @namespace    http://tampermonkey.net/
-// @version      1.7
-// @description  Script para preencher automaticamente formulários com 6 perfis diferentes usando botões de perfis na lateral da página.
-// @author       laurindo
+// @version      1.4
+// @author       Marques
 // @match        https://visa.vfsglobal.com/*
 // @grant        none
 // ==/UserScript==
 
 (function () {
-    'use strict';
+  'use strict';
 
-    // Perfis de preenchimento
-    const perfis = [
-        {
-            nome: "Nacional",
-            primeiroNome: "ANTONIO",
-            ultimoNome: "MICOLO",
-            dataNascimento: "13/06/1990",
-            numeroPassaporte: "N3420081",
-            dataExpiracaoPassaporte: "02/09/2039",
-            telefone: "937574306",
-            email: "mikasamoreco@gmail.com",
-            codigoPais: "244"
-        },
-        {
-            nome: "Nacional",
-            primeiroNome: "JORGE",
-            ultimoNome: "CASIMIRO",
-            dataNascimento: "14/06/2003",
-            numeroPassaporte: "N3382629",
-            dataExpiracaoPassaporte: "01/08/2034",
-            telefone: "937574306",
-            email: "mikasamoreco@gmail.com",
-            codigoPais: "244"
-        },
-        {
-            nome: "prioridade",
-            primeiroNome: "WILL",
-            ultimoNome: "CABIÇO",
-            dataNascimento: "01/08/1982",
-            numeroPassaporte: "N3494361",
-            dataExpiracaoPassaporte: "07/11/2039",
-            telefone: "937574306",
-            email: "mikasamoreco@gmail.com",
-            codigoPais: "244"
-        },
-        {codigoPais: "244"
+  // Lista de contas
+  const contas = [
+    { email: "mikasamoreco@gmail.com", senha: "Cleuria2122!" },
+    { email: "mikasamoreco@gmail.com", senha: "Cleuria2122!" }
+  ];
 
-        }
-    ];
+  let contaAtual = contas[0]; // Conta padrão
 
-    // Função para preencher o formulário com base no perfil selecionado
-    function preencherFormulario(perfil) {
-        const mapCampos = {
-            primeiroNome: "input[placeholder='Enter your first name']",
-            ultimoNome: "input[placeholder='Please enter last name.']",
-            dataNascimento: "input[placeholder='Please select the date']",
-            numeroPassaporte: "input[placeholder='Enter passport number']",
-            dataExpiracaoPassaporte: "#passportExpirtyDate",
-            codigoPais: "input[placeholder='44']",
-            telefone: "input[placeholder='012345648382']",
-            email: "input[placeholder='Enter Email Address']",
-        };
+  function preencherLogin() {
+    const campoEmail = document.querySelector('input[type="email"], input[name="email"], input#email');
+    const campoSenha = document.querySelector('input[type="password"], input[name="password"], input#password');
 
-        for (const campo in mapCampos) {
-            const input = document.querySelector(mapCampos[campo]);
-            if (input && perfil[campo]) {
-                input.value = perfil[campo];
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        }
+    if (campoEmail && campoSenha) {
+      campoEmail.value = contaAtual.email;
+      campoEmail.dispatchEvent(new Event('input', { bubbles: true }));
 
-        alert(`Campos preenchidos com sucesso para ${perfil.nome}!`);
+      campoSenha.value = contaAtual.senha;
+      campoSenha.dispatchEvent(new Event('input', { bubbles: true }));
+
+      console.log("Campos preenchidos com sucesso!");
+    } else {
+      console.warn("Campos não encontrados.");
     }
+  }
 
-    // Adicionar botões de perfil na lateral
-    function addProfileButtons() {
-        const sidebar = document.createElement('div');
-        sidebar.style.cssText = `
-            position: fixed;
-            top: 10%;
-            right: 0;
-            z-index: 9999;
-            background: rgba(255, 255, 255, 0.95);
-            width: 200px;
-            padding: 10px;
-            border-radius: 5px 0 0 5px;
-            box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
-        `;
-        sidebar.innerHTML = `<h3 style="text-align: center;">Escolher Perfil</h3>`;
-        document.body.appendChild(sidebar);
-
-        perfis.forEach((perfil, index) => {
-            const button = document.createElement('button');
-            button.textContent = perfil.nome;
-            button.style.cssText = `
-                display: block;
-                margin: 5px auto;
-                padding: 8px;
-                width: 90%;
-                background: #b94c19;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-            `;
-            button.addEventListener('click', () => preencherFormulario(perfil));
-            sidebar.appendChild(button);
-        });
+  function alternarConta() {
+    let novaConta = prompt("Escolha a conta (0 para primeira, 1 para segunda):", "0");
+    if (novaConta !== null && contas[novaConta]) {
+      contaAtual = contas[novaConta];
+      preencherLogin();
+    } else {
+      alert("Conta inválida!");
     }
+  }
 
-    // Executar ao carregar a página
-    window.addEventListener('load', addProfileButtons);
+  function criarBotao() {
+    const botao = document.createElement("button");
+    botao.textContent = "Preencher Login";
+    botao.style.position = "fixed";
+    botao.style.top = "50%";  // Centraliza verticalmente
+    botao.style.left = "50%"; // Centraliza horizontalmente
+    botao.style.transform = "translate(-50%, -50%)"; // Ajusta para garantir que o centro seja exato
+    botao.style.padding = "10px";
+    botao.style.backgroundColor = "#4CAF50";
+    botao.style.color = "#fff";
+    botao.style.border = "none";
+    botao.style.borderRadius = "5px";
+    botao.style.cursor = "pointer";
+    botao.style.zIndex = "9999";
+
+    botao.onclick = alternarConta;
+
+    document.body.appendChild(botao);
+  }
+
+  // Tenta preencher os campos após o carregamento
+  setInterval(preencherLogin, 1000);
+
+  window.addEventListener('load', criarBotao);
 })();
